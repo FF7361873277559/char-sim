@@ -2,44 +2,41 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>MBTI 캐릭터 시뮬레이터 (스탯 커스텀)</title>
+    <title>MBTI 캐릭터 시뮬레이터 (관리 기능 추가)</title>
     <style>
-        /* 1. 디자인: 산뜻하고 밝은 느낌 (Sky Blue & White) */
+        /* 1. 디자인: 산뜻하고 밝은 느낌 */
         :root {
             --primary: #4a90e2;
             --bg-color: #f0f9ff;
             --card-bg: #ffffff;
             --text-main: #333;
             --text-sub: #666;
-            --log-bg: #ffffff;
+            --danger: #ff6b6b;
+            --edit: #f39c12;
         }
 
         body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); }
         h1, h2 { color: var(--primary); margin-bottom: 10px; }
         
-        /* 레이아웃 컨테이너 */
         .container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        
-        /* 페이지 전환용 클래스 */
         .page { display: none; }
         .page.active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* 입력 폼 스타일 */
-        .input-section { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #eee; }
+        .input-section { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e1e4e8; }
         .input-group { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end; }
         .input-box { flex: 1; }
-        
         label { display: block; font-weight: bold; font-size: 0.9em; color: var(--text-sub); margin-bottom: 5px; }
         input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         
         /* 스탯 분배 스타일 */
-        .stat-dist-box { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .stat-input-group label { font-size: 0.8em; text-align: center; }
-        .stat-input-group input { width: 100%; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 5px; }
-        .remain-point { text-align: right; font-size: 0.9em; margin-bottom: 5px; font-weight: bold; }
-        .remain-point span { color: var(--primary); font-size: 1.2em; }
-        .error-msg { color: #e74c3c; font-size: 0.9em; display: none; margin-top: 5px; font-weight: bold;}
+        .stat-dist-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .stat-input-group label { font-size: 0.85em; text-align: center; display: block; }
+        .stat-input-group input { width: 100%; text-align: center; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-weight: bold; }
+        .remain-point { text-align: right; font-size: 0.95em; margin-bottom: 8px; font-weight: bold; }
+        .remain-point span { color: var(--primary); font-size: 1.3em; }
+        .error-msg { color: var(--danger); font-size: 0.9em; display: none; margin-top: 5px; font-weight: bold;}
 
         /* 버튼 스타일 */
         button { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
@@ -50,26 +47,38 @@
 
         /* 캐릭터 카드 스타일 */
         .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
-        .char-card { background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 10px; position: relative; }
+        .char-card { background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 10px; position: relative; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .char-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        .char-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .char-name { font-size: 1.2em; font-weight: bold; color: #333; }
-        .char-mbti { font-size: 0.9em; color: var(--primary); font-weight: bold; }
-        .stat-row { display: flex; justify-content: space-between; font-size: 0.8em; color: #555; margin-top: 5px; }
+        .char-mbti { font-size: 0.85em; background: #eaf4ff; color: var(--primary); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        
+        .stat-row { display: flex; justify-content: space-between; font-size: 0.8em; color: #555; margin-top: 4px; }
         .bar-bg { background: #eee; height: 6px; border-radius: 3px; margin-top: 2px; overflow: hidden; }
         .bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+
+        /* 카드 관리 버튼 (수정/삭제) */
+        .card-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
+        .action-btn { width: 24px; height: 24px; border-radius: 4px; border: none; color: white; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-edit { background-color: var(--edit); }
+        .btn-del { background-color: var(--danger); }
+        .btn-edit:hover { background-color: #d68910; }
+        .btn-del:hover { background-color: #c0392b; }
 
         /* 로그 스타일 */
         #log-window { height: 400px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-top: 20px; font-size: 0.95em; line-height: 1.6; }
         .log-entry { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #e0e0e0; }
         .log-day { font-weight: bold; color: var(--primary); margin-top: 15px; display: block; background: #eaf4ff; padding: 5px 10px; border-radius: 5px; }
-        .tag-event { color: #e67e22; font-weight: bold; } 
+        .tag-event { font-weight: bold; } 
     </style>
 </head>
 <body>
 
     <div class="container">
         <div id="page-setup" class="page active">
-            <h1>📝 캐릭터 등록소</h1>
-            <p>이름과 MBTI를 입력하고, 추가 스탯 100포인트를 분배하세요.</p>
+            <h1>📝 캐릭터 등록 및 관리</h1>
+            <p>캐릭터를 생성하고 하단 목록에서 바로 관리하세요.</p>
             
             <div class="input-section">
                 <div class="input-group">
@@ -121,24 +130,25 @@
                 </div>
                 <div id="point-error" class="error-msg">⚠️ 포인트 합계가 100이어야 합니다!</div>
                 <br>
-                <button class="btn-primary" onclick="addCharacter()">캐릭터 등록</button>
+                <button class="btn-primary" onclick="addCharacter()">🔽 캐릭터 리스트에 추가</button>
             </div>
 
+            <h3>등록된 캐릭터 (<span id="char-count">0</span>명)</h3>
             <div id="char-list" class="char-grid">
                 </div>
 
             <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-            <button class="btn-primary" style="background:#2ecc71;" onclick="startGame()">🚀 시뮬레이션 시작하기</button>
+            <button class="btn-primary" style="background:#2ecc71; height: 50px; font-size: 1.1em;" onclick="startGame()">🚀 시뮬레이션 시작하기</button>
         </div>
 
         <div id="page-sim" class="page">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h1>📺 상황 시뮬레이터</h1>
-                <button class="btn-secondary btn-sm" onclick="stopGame()">⚙️ 관리 화면으로</button>
+                <button class="btn-secondary btn-sm" onclick="stopGame()">⚙️ 설정으로 돌아가기</button>
             </div>
             
             <div style="display:flex; gap:10px; margin-bottom:10px; margin-top:10px;">
-                <button class="btn-primary" onclick="nextTurn()">📅 1일 진행 (다음 턴)</button>
+                <button class="btn-primary" onclick="nextTurn()">📅 1일 진행</button>
                 <button class="btn-secondary" onclick="autoPlay()">⏩ 자동 진행</button>
             </div>
 
@@ -154,7 +164,7 @@
 
     <script>
         // ==========================================
-        // 1. 포인트 분배 로직
+        // 1. 포인트 분배 및 유효성 검사
         // ==========================================
         const MAX_POINT = 100;
 
@@ -166,8 +176,8 @@
 
             const total = str + agi + agg + act;
             const remain = MAX_POINT - total;
-
             const remainSpan = document.getElementById('remain-val');
+            
             remainSpan.innerText = remain;
 
             if (remain < 0) {
@@ -178,43 +188,36 @@
                 remainSpan.style.color = "#4a90e2";
                 document.getElementById('point-error').style.display = "none";
             } else {
-                remainSpan.style.color = "green"; // 딱 0일 때
+                remainSpan.style.color = "green"; 
                 document.getElementById('point-error').style.display = "none";
             }
-            return remain; // 등록 버튼에서 확인용
+            return remain;
         }
 
         // ==========================================
-        // 2. 데이터 구조 및 설정
+        // 2. 데이터 관리
         // ==========================================
         let characters = []; 
         let day = 0; 
         let isAutoPlaying = false;
 
-        // MBTI 스탯 + 사용자 배분 스탯 합산
         function calculateStats(mbti, bonusStats) {
-            // 기본 베이스
             let stats = {
                 hp: 100, maxHp: 100,
                 sanity: 100, maxSanity: 100,
                 stamina: 100, maxStamina: 100,
                 
-                // 기본값 30 + MBTI 보너스
-                strength: 30, 
-                agility: 30,  
-                aggro: 30,    
-                active: 30,   
-                conscience: 50 
+                // 기본 30 + MBTI 가중치
+                strength: 30, agility: 30, aggro: 30, active: 30, conscience: 50 
             };
 
-            // MBTI 해석 로직
             const chars = mbti.split('');
             if (chars[0] === 'E') stats.active += 40; else stats.sanity += 20;
             if (chars[1] === 'S') stats.stamina += 30; else stats.conscience += 20;
             if (chars[2] === 'T') stats.aggro += 40; else stats.conscience += 30;
             if (chars[3] === 'J') stats.strength += 30; else stats.agility += 30;
 
-            // 사용자 지정 보너스 포인트 합산
+            // 보너스 스탯 합산
             stats.strength += bonusStats.str;
             stats.agility += bonusStats.agi;
             stats.aggro += bonusStats.agg;
@@ -224,21 +227,16 @@
         }
 
         // ==========================================
-        // 3. 캐릭터 관리 로직
+        // 3. 캐릭터 등록 / 수정 / 삭제
         // ==========================================
         function addCharacter() {
             const name = document.getElementById('input-name').value;
             const mbti = document.getElementById('input-mbti').value;
             
-            // 포인트 검증
-            const remain = checkPoints();
-            if (remain !== 0) {
-                alert("추가 포인트 합계가 정확히 100이어야 합니다!");
-                return;
-            }
-
+            if (checkPoints() !== 0) return alert("추가 포인트 합계가 정확히 100이어야 합니다!");
             if (!name) return alert("이름을 입력해주세요!");
 
+            // 보너스 스탯을 따로 저장해둬야 나중에 수정할 때 불러올 수 있음
             const bonusStats = {
                 str: Number(document.getElementById('stat-str').value),
                 agi: Number(document.getElementById('stat-agi').value),
@@ -249,9 +247,10 @@
             const stats = calculateStats(mbti, bonusStats);
             
             const newChar = {
-                id: Date.now(),
+                id: Date.now(), // 고유 ID
                 name: name,
                 mbti: mbti,
+                bonusStats: bonusStats, // 수정용 데이터 원본
                 stats: stats,
                 relations: {} 
             };
@@ -260,22 +259,66 @@
             renderCharList();
             
             // 입력창 초기화
+            resetInputForm();
+        }
+
+        function deleteCharacter(id) {
+            if(confirm("정말 이 캐릭터를 삭제하시겠습니까?")) {
+                characters = characters.filter(c => c.id !== id);
+                renderCharList();
+            }
+        }
+
+        function editCharacter(id) {
+            // 수정할 캐릭터 찾기
+            const char = characters.find(c => c.id === id);
+            if (!char) return;
+
+            // 입력창에 값 채워넣기
+            document.getElementById('input-name').value = char.name;
+            document.getElementById('input-mbti').value = char.mbti;
+            document.getElementById('stat-str').value = char.bonusStats.str;
+            document.getElementById('stat-agi').value = char.bonusStats.agi;
+            document.getElementById('stat-agg').value = char.bonusStats.agg;
+            document.getElementById('stat-act').value = char.bonusStats.act;
+
+            // 포인트 검사 다시 실행해서 숫자 색깔 맞춤
+            checkPoints();
+
+            // 리스트에서는 삭제 (수정 후 다시 등록하게 유도)
+            characters = characters.filter(c => c.id !== id);
+            renderCharList();
+
+            // 스크롤을 위로 올려줌
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            alert("캐릭터 정보를 불러왔습니다. 수정 후 다시 '등록' 버튼을 눌러주세요.");
+        }
+
+        function resetInputForm() {
             document.getElementById('input-name').value = ''; 
             document.getElementById('stat-str').value = 0;
             document.getElementById('stat-agi').value = 0;
             document.getElementById('stat-agg').value = 0;
             document.getElementById('stat-act').value = 0;
-            checkPoints(); // 포인트 표시 초기화
+            checkPoints(); 
         }
 
         function renderCharList() {
             const list = document.getElementById('char-list');
+            document.getElementById('char-count').innerText = characters.length;
+
             list.innerHTML = characters.map(c => `
                 <div class="char-card">
-                    <div class="char-name">${c.name}</div>
-                    <div class="char-mbti">${c.mbti}</div>
-                    <div class="stat-row"><span>체력</span> <span>${c.stats.hp}/${c.stats.maxHp}</span></div>
-                    <div class="stat-row"><span>정신력: ${c.stats.sanity}</span> <span>공격성: ${c.stats.aggro}</span></div>
+                    <div class="card-actions">
+                        <button class="action-btn btn-edit" onclick="editCharacter(${c.id})" title="수정">✎</button>
+                        <button class="action-btn btn-del" onclick="deleteCharacter(${c.id})" title="삭제">✕</button>
+                    </div>
+                    <div class="char-header">
+                        <span class="char-name">${c.name}</span>
+                        <span class="char-mbti">${c.mbti}</span>
+                    </div>
+                    <div class="stat-row"><span>체력</span> <span>${c.stats.hp}</span></div>
+                    <div class="stat-row"><span>정신: ${c.stats.sanity}</span> <span>공격성: ${c.stats.aggro}</span></div>
                     <div class="stat-row"><span>근력: ${c.stats.strength}</span> <span>순발력: ${c.stats.agility}</span></div>
                     <div class="stat-row"><span>능동성: ${c.stats.active}</span> <span>양심: ${c.stats.conscience}</span></div>
                 </div>
@@ -288,6 +331,7 @@
         function startGame() {
             if (characters.length < 2) return alert("최소 2명의 캐릭터가 필요합니다!");
             
+            // 관계도 초기화
             characters.forEach(c1 => {
                 characters.forEach(c2 => {
                     if (c1.id !== c2.id) {
@@ -303,9 +347,14 @@
         }
 
         function stopGame() {
-            document.getElementById('page-sim').classList.remove('active');
-            document.getElementById('page-setup').classList.add('active');
-            isAutoPlaying = false;
+            if(confirm("시뮬레이션을 종료하고 설정 화면으로 돌아갈까요? (진행 상황은 초기화됩니다)")) {
+                document.getElementById('page-sim').classList.remove('active');
+                document.getElementById('page-setup').classList.add('active');
+                isAutoPlaying = false;
+                // 캐릭터 상태(HP 등)는 초기화되지 않고 유지되게 할 수도 있지만, 
+                // 보통 다시 세팅하러 가면 초기화하는게 깔끔하므로 일단 유지.
+                // 완전 초기화를 원하시면 새로고침이 제일 빠름.
+            }
         }
 
         function nextTurn() {
@@ -318,12 +367,9 @@
                 return;
             }
 
-            // 능동성이 높은 캐릭터일수록 이벤트 주체가 될 확률 높임 (가중치 랜덤)
-            // 간단하게: 이벤트 횟수 산정
             const eventCount = Math.max(1, Math.floor(survivors.length / 2));
             
             for(let i=0; i<eventCount; i++) {
-                // 주체 선정 (단순 랜덤)
                 const actor = survivors[Math.floor(Math.random() * survivors.length)];
                 let target = survivors[Math.floor(Math.random() * survivors.length)];
                 
@@ -336,10 +382,9 @@
         }
 
         function processEvent(actor, target) {
-            // 혼자 행동
+            // 로직 동일
             if (actor.id === target.id) {
-                const recovery = 10;
-                heal(actor, 'hp', recovery);
+                heal(actor, 'hp', 15);
                 heal(actor, 'stamina', 10);
                 addLog(`💤 <b>${actor.name}</b>(은)는 휴식을 취하며 체력을 회복했습니다.`);
                 return;
@@ -348,22 +393,101 @@
             const relation = actor.relations[target.name] || 0;
             const dice = Math.random() * 100;
             
-            // 1. 공격 이벤트 (호감도 낮거나, 공격성 높음)
-            // 조건: 호감도 -20 미만이거나, (공격성 > 70 이고 주사위 < 50)
+            // 1. 공격 (호감도 -20 미만 or 공격성 70초과+운)
             if (relation < -20 || (actor.stats.aggro > 70 && dice < 50)) {
-                addLog(`<span class="tag-event" style="color:red;">[충돌]</span> <b>${actor.name}</b>(이)가 <b>${target.name}</b>에게 싸움을 겁니다!`);
+                addLog(`<span class="tag-event" style="color:#e74c3c;">[충돌]</span> <b>${actor.name}</b>(이)가 <b>${target.name}</b>에게 싸움을 겁니다!`);
                 
-                // 전투력 판정 (근력+순발력+공격성) vs (근력+순발력+지구력)
                 const actorPower = actor.stats.strength + actor.stats.agility + actor.stats.aggro + (Math.random()*30);
                 const targetPower = target.stats.strength + target.stats.agility + target.stats.stamina + (Math.random()*30);
 
                 if (actorPower > targetPower) {
-                    // 공격 성공
                     const dmg = Math.floor(actor.stats.strength / 2) + 5;
                     damage(target, dmg);
-                    changeRelation(actor, target, -10);
-                    changeRelation(target, actor, -20);
+                    changeRelation(actor, target, -15);
+                    changeRelation(target, actor, -25);
                     addLog(`Result: 🗡️ <b>${actor.name}</b>의 승리! ${target.name}에게 ${dmg}의 피해를 입혔습니다.`);
                 } else {
-                    // 반격/회피
-                    addLog(`Result: 🛡️ <b>${target.name}</b>(이)가 공격을 가볍게 피했습니다. ${
+                    addLog(`Result: 🛡️ <b>${target.name}</b>(이)가 공격을 가볍게 피했습니다.`);
+                    damage(actor, 3); 
+                }
+            } 
+            // 2. 우호 (호감도 20 초과 or 양심 60초과+운)
+            else if (relation > 20 || (actor.stats.conscience > 60 && dice < 60)) {
+                addLog(`<span class="tag-event" style="color:#27ae60;">[협력]</span> <b>${actor.name}</b>(이)가 <b>${target.name}</b>를 돕습니다.`);
+                changeRelation(actor, target, 5);
+                changeRelation(target, actor, 10);
+                heal(target, 'sanity', 15);
+                addLog(`Result: <b>${target.name}</b>의 정신력이 회복되었습니다.`);
+            }
+            // 3. 일상
+            else {
+                addLog(`💬 <b>${actor.name}</b>(와)과 <b>${target.name}</b>(이)가 대화를 나눕니다.`);
+                changeRelation(actor, target, 2);
+                changeRelation(target, actor, 2);
+            }
+        }
+
+        function changeRelation(from, to, amount) {
+            if (!from.relations[to.name]) from.relations[to.name] = 0;
+            from.relations[to.name] += amount;
+        }
+
+        function damage(char, amount) {
+            char.stats.hp -= amount;
+            if (char.stats.hp <= 0) {
+                char.stats.hp = 0;
+                addLog(`💀 <b>${char.name}</b>님이 쓰러졌습니다...`);
+            }
+        }
+
+        function heal(char, statType, amount) {
+            const max = statType === 'hp' ? char.stats.maxHp : 
+                        statType === 'sanity' ? char.stats.maxSanity : 
+                        statType === 'stamina' ? char.stats.maxStamina : 999;
+            char.stats[statType] += amount;
+            if (char.stats[statType] > max) char.stats[statType] = max;
+        }
+
+        function addLog(html) {
+            const win = document.getElementById('log-window');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = html;
+            win.appendChild(entry);
+            win.scrollTop = win.scrollHeight;
+        }
+
+        function updateSimStatus() {
+            const container = document.getElementById('sim-status');
+            container.innerHTML = characters.map(c => {
+                const hpPercent = (c.stats.hp / c.stats.maxHp) * 100;
+                const isDead = c.stats.hp <= 0;
+                return `
+                <div class="char-card" style="${isDead ? 'opacity:0.5; background:#ddd;' : ''}">
+                    <div class="char-name">${c.name} ${isDead?'(사망)':''}</div>
+                    <div class="stat-row">
+                        <span>HP: ${c.stats.hp}</span>
+                        <span>정신: ${c.stats.sanity}</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill" style="width:${hpPercent}%; background:${hpPercent<30?'red':'#4a90e2'}"></div></div>
+                </div>
+            `}).join('');
+        }
+
+        function autoPlay() {
+            if (isAutoPlaying) return;
+            isAutoPlaying = true;
+            const timer = setInterval(() => {
+                if (!isAutoPlaying || characters.filter(c=>c.stats.hp>0).length < 1) {
+                    clearInterval(timer);
+                    isAutoPlaying = false;
+                } else {
+                    nextTurn();
+                }
+            }, 1000); 
+        }
+
+        checkPoints();
+    </script>
+</body>
+</html>
