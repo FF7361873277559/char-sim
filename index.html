@@ -2,25 +2,29 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>심연의 생존자들 (Abyss Survivors)</title>
+    <title>Abyss Survivors: Deep Green</title>
     <style>
-        /* 1. 디자인: CoC & Dark Fantasy Style */
+        /* 1. 심연 테마 (Abyssal Dark Green) */
         :root {
-            --bg-color: #0a0a0c;
-            --container-bg: #141417;
-            --card-bg: #1e1e24;
-            --text-main: #d1d1e0;
-            --text-sub: #7a7a8c;
+            /* 순수 검정(#000) 사용 지양 -> 깊은 늪색/먹색 사용 */
+            --bg-color: #0d1110;       /* 아주 어두운 녹회색 */
+            --container-bg: #141815;   /* 어두운 컨테이너 */
+            --panel-bg: #1b211d;       /* 패널 배경 */
             
-            --hp-color: #d32f2f;       /* 체력: 핏빛 */
-            --san-color: #7b1fa2;      /* 이성: 보라색 (광기) */
-            --food-color: #fbc02d;     /* 포만: 노랑 */
+            --main-accent: #2e7d32;    /* 메인 포인트 (진한 녹색) */
+            --sub-accent: #69f0ae;     /* 하이라이트 (네온 민트) */
             
-            --btn-item: #2c3e50;
-            --btn-hover: #34495e;
+            --text-main: #e0e2e1;
+            --text-sub: #8a9990;
             
-            --log-bg: #000000;
-            --log-text: #bdc3c7;
+            --hp-color: #b71c1c;       /* 피 (어두운 빨강) */
+            --san-color: #4a148c;      /* 광기 (어두운 보라) */
+            --food-color: #f57f17;     /* 허기 (어두운 노랑) */
+            
+            --btn-bg: #263238;
+            --btn-hover: #37474f;
+            
+            --border-color: #2c3830;
         }
 
         body { 
@@ -28,555 +32,515 @@
             background-color: var(--bg-color); 
             color: var(--text-main); 
             margin: 0; padding: 20px; 
-            line-height: 1.6;
+            height: 100vh; box-sizing: border-box; overflow: hidden;
         }
 
-        h1 { color: #9b59b6; text-shadow: 0 0 10px rgba(155, 89, 182, 0.5); border-bottom: 1px solid #333; padding-bottom: 15px; }
-        h2, h3 { color: #ecf0f1; }
+        /* 레이아웃 */
+        .container { 
+            max-width: 1400px; margin: 0 auto; 
+            background: var(--container-bg); 
+            height: 100%; border-radius: 6px; border: 1px solid var(--border-color); 
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 40px rgba(0, 20, 10, 0.5); /* 녹색 틴트 그림자 */
+        }
 
-        .container { max-width: 1000px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 4px; border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .header { 
+            padding: 15px 25px; border-bottom: 1px solid var(--border-color); 
+            flex-shrink: 0; display:flex; justify-content:space-between; align-items:center;
+            background: linear-gradient(90deg, #141815, #0f2015);
+        }
+        h1 { margin: 0; color: var(--sub-accent); font-size: 1.5em; text-shadow: 0 0 10px rgba(105, 240, 174, 0.3); }
         
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.6s; }
+        .page { display: none; height: 100%; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        .page.active { display: block; animation: fadeIn 0.8s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* 입력 폼 */
-        .input-section { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 4px; border: 1px solid #333; margin-bottom: 20px; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .input-box { flex: 1; }
-        label { display: block; font-size: 0.8em; color: var(--text-sub); margin-bottom: 5px; }
-        input, select { 
-            width: 100%; padding: 10px; background: #000; border: 1px solid #444; color: #fff; 
-            border-radius: 2px; box-sizing: border-box; 
-        }
-
-        /* 스탯 입력 */
-        .stat-dist-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
-        .stat-input-group input { text-align: center; color: #64b5f6; font-weight: bold; }
         
-        /* 버튼 */
-        button { padding: 10px 20px; border: none; border-radius: 2px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, #5e35b1, #4527a0); width: 100%; box-shadow: 0 4px 15px rgba(94, 53, 177, 0.4); }
-        .btn-primary:hover { filter: brightness(1.2); }
-        .btn-secondary { background: #424242; }
-        
-        /* 아이템 버튼 */
-        .item-btn { 
-            background: var(--btn-item); color: #ccc; font-size: 0.75em; padding: 4px 8px; margin: 2px; 
-            border: 1px solid #444; cursor: pointer; display: inline-block; 
+        /* 2단 레이아웃 */
+        #page-sim.active { display: flex; gap: 20px; padding: 20px; overflow: hidden; }
+
+        .sim-left { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .sim-right { 
+            flex: 1; display: flex; flex-direction: column; overflow-y: auto; 
+            min-width: 360px; gap: 20px; 
+            padding-right: 5px; /* 스크롤바 여백 */
         }
-        .item-btn:hover { background: var(--btn-hover); color: white; border-color: #aaa; }
-
-        /* 캐릭터 카드 */
-        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; margin-top: 20px; }
-        .char-card { 
-            background: var(--card-bg); border: 1px solid #333; padding: 15px; 
-            position: relative; border-left: 3px solid #555; 
-        }
-        .char-card.danger { border-left-color: var(--hp-color); } /* 위급 */
-        .char-card.madness { border-left-color: var(--san-color); } /* 광기 */
-
-        .char-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .char-name { font-size: 1.1em; font-weight: bold; color: #fff; }
-        .char-class { font-size: 0.8em; color: #888; }
-
-        .stat-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.8em; color: #aaa; margin-top: 5px; }
-        .bar-bg { flex-grow: 1; background: #333; height: 5px; margin: 0 10px; position: relative; }
-        .bar-fill { height: 100%; transition: width 0.3s; }
-        
-        .inv-area { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #444; }
-        .inv-label { font-size: 0.75em; color: #666; display: block; margin-bottom: 5px; }
 
         /* 로그 창 */
         #log-window { 
-            height: 500px; overflow-y: auto; background: var(--log-bg); border: 1px solid #333; 
-            padding: 20px; font-family: 'Consolas', monospace; font-size: 0.9em; 
+            flex-grow: 1; overflow-y: auto; 
+            background: #111412; /* 아주 어두운 녹색 */
+            border: 1px solid var(--border-color); 
+            padding: 20px; font-family: 'Consolas', monospace; font-size: 0.95em; 
+            border-radius: 4px; color: #cfd8dc;
         }
-        .log-entry { margin-bottom: 10px; border-bottom: 1px solid #1a1a1a; padding-bottom: 5px; }
-        
-        /* 텍스트 컬러 */
-        .txt-day { color: #fff; background: #333; padding: 2px 6px; font-size: 0.8em; }
-        .txt-threat { color: #ff5252; text-shadow: 0 0 5px rgba(255, 82, 82, 0.5); }
-        .txt-sanity { color: #e040fb; }
+        .log-entry { margin-bottom: 8px; border-bottom: 1px solid #1f2923; padding-bottom: 6px; line-height: 1.6; }
+        .txt-day { color: var(--sub-accent); font-weight: bold; border: 1px solid var(--main-accent); padding: 2px 8px; border-radius: 4px; font-size: 0.8em;}
+        .txt-threat { color: #ef5350; }
         .txt-item { color: #fdd835; }
-        .txt-sys { color: #7f8c8d; font-style: italic; }
+        .txt-info { color: #81d4fa; }
 
+        /* 공용 인벤토리 */
+        .inventory-box {
+            background: var(--panel-bg); border: 1px solid var(--border-color);
+            padding: 15px; border-radius: 4px;
+        }
+        .inv-title { font-weight: bold; color: var(--sub-accent); margin-bottom: 12px; display:block; border-bottom:1px solid var(--border-color); padding-bottom:5px;}
+        .inv-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        
+        .item-btn { 
+            background: var(--btn-bg); color: #b0bec5; border: 1px solid #455a64;
+            padding: 6px 12px; font-size: 0.85em; cursor: pointer; border-radius: 2px;
+            transition: all 0.2s;
+        }
+        .item-btn:hover { background: var(--main-accent); border-color: var(--sub-accent); color: white; box-shadow: 0 0 8px var(--main-accent); }
+
+        /* 캐릭터 카드 */
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .char-card { 
+            background: var(--panel-bg); border: 1px solid var(--border-color); padding: 15px; 
+            border-left: 3px solid #444; border-radius: 4px;
+            position: relative;
+        }
+        /* 상태별 테두리 색상 */
+        .char-card.danger { border-left-color: var(--hp-color); box-shadow: inset 10px 0 20px -10px rgba(183, 28, 28, 0.2); }
+        .char-card.madness { border-left-color: var(--san-color); box-shadow: inset 10px 0 20px -10px rgba(74, 20, 140, 0.2); }
+
+        .char-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: flex-end; }
+        .char-name { font-weight: bold; font-size: 1.1em; color: #fff; }
+        .char-meta { font-size: 0.8em; color: var(--text-sub); }
+
+        /* 그래프 바 스타일 */
+        .stat-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.8em; color: #aaa; margin-top: 6px; }
+        .bar-bg { 
+            flex-grow: 1; background: #263238; height: 6px; margin: 0 10px; 
+            border-radius: 2px; overflow: hidden; /* ★중요: 그래프 뚫림 방지 */
+        }
+        .bar-fill { height: 100%; transition: width 0.4s ease-out; max-width: 100%; /* ★중요: 100% 초과 방지 */ }
+
+        /* 모달창 */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 12, 0.85); z-index: 1000;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        .modal-box {
+            background: #1c241c; border: 1px solid var(--sub-accent); padding: 25px;
+            width: 420px; max-width: 90%; border-radius: 6px; 
+            box-shadow: 0 0 30px rgba(46, 125, 50, 0.3);
+            text-align: center;
+        }
+        .modal-title { color: var(--sub-accent); font-size: 1.3em; margin-bottom: 10px; font-weight: bold; }
+        .modal-desc { color: #ccc; margin-bottom: 25px; font-size: 0.95em; line-height: 1.5; }
+        .target-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        
+        .target-btn {
+            background: #253028; border: 1px solid #3d5afe; color: #e0e0e0; padding: 12px; cursor: pointer;
+            border-radius: 4px; transition: 0.2s;
+        }
+        .target-btn:hover { background: #1b5e20; border-color: var(--sub-accent); color: white; }
+        .target-btn.dead { opacity: 0.4; pointer-events: none; text-decoration: line-through; border-color: #444; }
+
+        .modal-close { background: transparent; border: 1px solid #ef5350; color: #ef5350; padding: 8px 25px; cursor: pointer; border-radius: 4px; }
+        .modal-close:hover { background: #c62828; color: white; border-color: #c62828; }
+
+        /* 버튼 */
+        .btn-main { 
+            background: #1b5e20; color: white; border: none; padding: 12px 20px; 
+            font-weight: bold; cursor: pointer; font-size: 1em; width: 100%; margin-bottom: 10px; 
+            border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #2e7d32;
+        }
+        .btn-main:hover { background: #2e7d32; box-shadow: 0 0 10px rgba(46, 125, 50, 0.5); }
+        .btn-sub { background: #37474f; color: #cfd8dc; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
+
+        /* 입력 폼 */
+        .input-section { background: rgba(30, 40, 35, 0.5); padding: 20px; border:1px solid var(--border-color); border-radius: 4px;}
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        input, select { 
+            width: 100%; padding: 12px; background: #111412; 
+            border: 1px solid #455a64; color: white; border-radius: 2px;
+        }
+        input:focus, select:focus { border-color: var(--sub-accent); outline: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="header">
+            <h1>👁️ Abyss Survivors</h1>
+            <div id="setup-btn-group" style="display:none;">
+                <button class="btn-sub" onclick="stopGame()">⚙️ 종료</button>
+            </div>
+        </div>
+
         <div id="page-setup" class="page active">
-            <h1>👁️ Abyss Survivors (심연의 생존자들)</h1>
-            <p style="color:#aaa; font-size:0.9em;">
-                "별들이 제 자리를 찾을 때, 인류의 시대는 끝났다."<br>
-                SAN치와 체력을 관리하며, 다가오는 '그것'들로부터 생존하십시오.
-            </p>
-            
-            <div class="input-section">
-                <div class="input-group">
-                    <div class="input-box">
-                        <label>탐사자 이름 (Investigator)</label>
-                        <input type="text" id="input-name" placeholder="예: 키리시마 (사립탐정)">
-                    </div>
-                    <div class="input-box">
-                        <label>성향 (MBTI)</label>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <p style="color:#8a9990; margin-bottom: 20px;">심연에서 살아남을 탐사자를 등록하십시오.</p>
+                
+                <div class="input-section">
+                    <div class="input-group">
+                        <input type="text" id="input-name" placeholder="탐사자 이름 (Ex. K)">
                         <select id="input-mbti">
                             <option value="INTJ">INTJ (냉철한 전략가)</option>
-                            <option value="INTP">INTP (오컬트 연구가)</option>
+                            <option value="INTP">INTP (심연의 연구가)</option>
                             <option value="INFJ">INFJ (고뇌하는 예언자)</option>
-                            <option value="INFP">INFP (꿈꾸는 몽상가)</option>
-                            <option value="ISTJ">ISTJ (규칙적인 관리자)</option>
                             <option value="ISTP">ISTP (냉소적인 해결사)</option>
-                            <option value="ISFJ">ISFJ (헌신적인 조력자)</option>
-                            <option value="ISFP">ISFP (방랑하는 예술가)</option>
-                            <option value="ENTJ">ENTJ (오만한 지배자)</option>
-                            <option value="ENTP">ENTP (광기어린 발명가)</option>
-                            <option value="ENFJ">ENFJ (현혹하는 선동가)</option>
-                            <option value="ENFP">ENFP (명랑한 분위기메이커)</option>
-                            <option value="ESTJ">ESTJ (강압적인 리더)</option>
+                            <option value="ESTJ">ESTJ (강압적인 지휘관)</option>
                             <option value="ESTP">ESTP (무모한 모험가)</option>
-                            <option value="ESFJ">ESFJ (친절한 이웃)</option>
-                            <option value="ESFP">ESFP (쾌락주의자)</option>
+                            <option value="ENFJ">ENFJ (광기의 선동가)</option>
+                            <option value="ENTP">ENTP (미치광이 발명가)</option>
+                            <option value="ISFP">ISFP (조용한 관찰자)</option>
                         </select>
                     </div>
+                    <button class="btn-main" onclick="addCharacter()">탐사자 명단 추가</button>
                 </div>
 
-                <div class="remain-point" style="text-align:right; font-size:0.85em; margin-bottom:5px;">
-                    잔여 포인트: <span id="remain-val" style="color:#64b5f6; font-size:1.2em;">100</span>
+                <div id="setup-list" class="char-grid"></div>
+                
+                <div style="margin-top: 40px; text-align: center;">
+                    <button class="btn-main" style="padding: 15px 30px; font-size: 1.2em; width:auto;" onclick="startGame()">🎲 심연으로 진입 (Start Session)</button>
                 </div>
-                <div class="stat-dist-box">
-                    <div class="stat-input-group">
-                        <label>근력 (STR)<br><span style="color:#555">물리 전투</span></label>
-                        <input type="number" id="stat-str" value="0" min="0" oninput="checkPoints()">
-                    </div>
-                    <div class="stat-input-group">
-                        <label>민첩 (DEX)<br><span style="color:#555">회피/도주</span></label>
-                        <input type="number" id="stat-agi" value="0" min="0" oninput="checkPoints()">
-                    </div>
-                    <div class="stat-input-group">
-                        <label>투지 (POW)<br><span style="color:#555">정신 저항</span></label>
-                        <input type="number" id="stat-agg" value="0" min="0" oninput="checkPoints()">
-                    </div>
-                    <div class="stat-input-group">
-                        <label>관찰 (OBS)<br><span style="color:#555">파밍/발견</span></label>
-                        <input type="number" id="stat-act" value="0" min="0" oninput="checkPoints()">
-                    </div>
-                </div>
-                <div id="point-error" style="color:#ff5252; display:none; text-align:right; font-size:0.8em; margin-top:5px;">
-                    ⚠ 포인트 합계가 정확히 100이어야 합니다.
-                </div>
-                <br>
-                <button class="btn-primary" onclick="addCharacter()">탐사자 등록</button>
             </div>
-
-            <div id="char-list" class="char-grid"></div>
-
-            <hr style="border-color:#333; margin:30px 0;">
-            <button class="btn-primary" style="background:#2e7d32; height:50px;" onclick="startGame()">🎲 세션 시작 (Start Session)</button>
         </div>
 
         <div id="page-sim" class="page">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:15px;">
-                <h2 style="margin:0;">📜 플레이 로그</h2>
-                <button class="btn-secondary" style="font-size:0.8em;" onclick="stopGame()">⚙️ 세션 종료</button>
-            </div>
             
-            <div style="display:flex; gap:10px; margin:20px 0;">
-                <button class="btn-primary" onclick="nextTurn()">🌙 밤을 보낸다 (Next Day)</button>
-                <button class="btn-secondary" onclick="autoPlay()">⏩ 자동 진행</button>
-            </div>
-
-            <div id="log-window">
-                <div class="log-entry" style="color:#666;">
-                    ...치직... 기록 시작.<br>
-                    이곳은 유클리드 기하학이 통하지 않는 폐허입니다.<br>
-                    살아남으려면 이성(SAN)을 유지하십시오.
+            <div class="sim-left">
+                <button class="btn-main" onclick="nextTurn()">🌙 다음 날 (Next Day)</button>
+                <div id="log-window">
+                    <div class="log-entry" style="color:#555;">...기록 시스템 가동...</div>
                 </div>
             </div>
 
-            <h3 style="margin-top:30px; border-left:4px solid #7b1fa2; padding-left:10px;">생존자 현황 (Inventory)</h3>
-            <p style="font-size:0.8em; color:#888;">💡 아이템 버튼을 클릭하여 사용하십시오.</p>
-            <div id="sim-status" class="char-grid"></div>
+            <div class="sim-right">
+                <div class="inventory-box">
+                    <span class="inv-title">📦 공용 물자 (Shared Supply)</span>
+                    <div id="shared-inv" class="inv-grid">
+                        <span style="color:#555; font-size:0.9em; padding:10px;">..물자가 바닥났습니다..</span>
+                    </div>
+                </div>
+
+                <div id="sim-char-list" class="char-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="item-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modal-title" class="modal-title">아이템 사용</div>
+            <div id="modal-desc" class="modal-desc">대상 선택</div>
+            <div id="modal-targets" class="target-list"></div>
+            <button class="modal-close" onclick="closeModal()">취소</button>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // 0. CoC & 서브컬쳐 데이터 정의
+        // 0. 데이터 및 상수
         // ==========================================
+        const MAX_STAT_CAP = 100; // 절대적인 최대치 기준 (필요시 변경 가능)
+        
         const ITEMS = [
-            { name: "응급 키트", type: "hp", val: 25, desc: "물리적 상처를 봉합합니다." },
-            { name: "보존식 (통조림)", type: "food", val: 40, desc: "맛은 끔찍하지만 열량이 높습니다." },
-            { name: "진정제 (앰플)", type: "sanity", val: 20, desc: "떨리는 손을 멈추게 합니다." },
-            { name: "낡은 부적", type: "sanity", val: 30, desc: "알 수 없는 문양이 새겨져 있습니다." },
-            { name: "깨끗한 물", type: "food", val: 20, desc: "오염되지 않은 귀한 물입니다." },
-            { name: "에너지 드링크", type: "food", val: 15, desc: "각성 효과가 있습니다." },
-            { name: "가족 사진", type: "sanity", val: 40, desc: "돌아가야 할 이유를 상기시킵니다." },
-            { name: "크툴루 신화서", type: "sanity", val: -10, desc: "읽으면 안 될 것 같습니다..." } // 함정 아이템
+            { name: "응급 키트", type: "hp", val: 30, desc: "찢어진 살을 봉합합니다. (HP +30)" },
+            { name: "녹슨 통조림", type: "food", val: 40, desc: "비릿하지만 배는 채웁니다. (식량 +40)" },
+            { name: "진정제", type: "sanity", val: 20, desc: "떨리는 손을 멈춥니다. (이성 +20)" },
+            { name: "정화수", type: "food", val: 25, desc: "오염되지 않은 물입니다. (식량 +25)" },
+            { name: "엘더 사인", type: "sanity", val: 40, desc: "고대 표식이 마음을 보호합니다. (이성 +40)" },
+            { name: "군용 스팀팩", type: "hp", val: 15, desc: "고통을 잠시 잊게 합니다. (HP +15)" }
         ];
 
         const THREATS = [
-            { name: "비유클리드 기하학의 방", power: 70, text: "벽과 천장의 경계가 사라지고 공간이 뒤틀립니다. (SAN 체크 필요)" },
-            { name: "심해의 구울 무리", power: 90, text: "축축한 점액질로 뒤덮인 괴물들이 어둠 속에서 습격합니다!" },
-            { name: "별의 흡혈귀 (Star Vampire)", power: 130, text: "보이지 않는 무언가가 동료의 피를 갈구하며 웃음소리를 냅니다." },
-            { name: "검은 안개 (The Fog)", power: 50, text: "한 치 앞도 보이지 않는 안개 속에서 속삭임이 들려옵니다." },
-            { name: "쇼고스의 점액", power: 110, text: "지하철 역사가 거대한 젤리 같은 괴물로 가득 찹니다. '테켈리-리!'" },
-            { name: "하스터의 황색 징표", power: 150, text: "누군가 벽에 노란색 표식을 그렸습니다. 쳐다보는 것만으로도 미칠 것 같습니다." }
+            { name: "비유클리드 미로", power: 70, text: "공간이 뒤틀려 출구를 찾을 수 없습니다." },
+            { name: "심해인(Deep One)", power: 110, text: "축축한 비늘을 가진 괴물들이 습격합니다." },
+            { name: "검은 안개", power: 90, text: "안개 속에서 속삭임이 들려와 정신을 갉아먹습니다." },
+            { name: "쇼고스", power: 140, text: "형체 없는 점액질 괴물이 덮쳐옵니다. 테켈리-리!" },
+            { name: "광신도 무리", power: 80, text: "주문을 외우는 광신도들과 마주쳤습니다." }
         ];
 
-        const MAX_POINT = 100;
+        let characters = [];
+        let partyInventory = [];
+        let day = 0;
+        let selectedItemIndex = -1;
 
         // ==========================================
-        // 1. 유틸리티 및 입력 로직
+        // 1. 캐릭터 생성 및 관리
         // ==========================================
-        function checkPoints() {
-            const str = Number(document.getElementById('stat-str').value) || 0;
-            const agi = Number(document.getElementById('stat-agi').value) || 0;
-            const agg = Number(document.getElementById('stat-agg').value) || 0; // 투지(POW)
-            const act = Number(document.getElementById('stat-act').value) || 0; // 관찰(OBS)
-
-            const total = str + agi + agg + act;
-            const remain = MAX_POINT - total;
-            
-            const el = document.getElementById('remain-val');
-            el.innerText = remain;
-            
-            const err = document.getElementById('point-error');
-            if(remain !== 0) {
-                el.style.color = "#ff5252"; 
-                err.style.display = "block";
-            } else {
-                el.style.color = "#64b5f6"; 
-                err.style.display = "none";
-            }
-            return remain;
-        }
-
-        // ==========================================
-        // 2. 캐릭터 데이터 관리
-        // ==========================================
-        let characters = []; 
-        let day = 0; 
-        let isAutoPlaying = false;
-
-        function calculateStats(mbti, bonusStats) {
-            let stats = {
-                hp: 100, maxHp: 100,
-                sanity: 100, maxSanity: 100, // SAN치
-                food: 100, maxFood: 100,     // 포만감
-                
-                strength: 20, // 근력
-                agility: 20,  // 민첩
-                aggro: 20,    // 투지 (정신력 방어)
-                active: 20,   // 관찰 (파밍)
-                conscience: 40 // 협력심
-            };
-
-            const chars = mbti.split('');
-            // MBTI 보정 (CoC 스타일 해석)
-            if (chars[0] === 'E') stats.active += 30; else stats.sanity += 30; // 외향: 관찰력 / 내향: 멘탈
-            if (chars[1] === 'S') stats.strength += 20; else stats.conscience += 20;
-            if (chars[2] === 'T') stats.aggro += 30; else stats.conscience += 20; // 사고: 투지 / 감정: 협력
-            if (chars[3] === 'J') stats.strength += 20; else stats.agility += 20;
-
-            // 유저 포인트
-            stats.strength += bonusStats.str;
-            stats.agility += bonusStats.agi;
-            stats.aggro += bonusStats.agg;
-            stats.active += bonusStats.act;
-
-            return stats;
-        }
-
         function addCharacter() {
             const name = document.getElementById('input-name').value;
             const mbti = document.getElementById('input-mbti').value;
-            
-            if (checkPoints() !== 0) return alert("스탯 포인트 합계를 100으로 맞춰주세요!");
-            if (!name) return alert("탐사자 이름을 입력해주세요!");
+            if(!name) return alert("이름을 입력하세요.");
 
-            const bonusStats = {
-                str: Number(document.getElementById('stat-str').value),
-                agi: Number(document.getElementById('stat-agi').value),
-                agg: Number(document.getElementById('stat-agg').value), // POW
-                act: Number(document.getElementById('stat-act').value)  // OBS
+            let stats = {
+                hp: 100, maxHp: 100,
+                sanity: 100, maxSanity: 100,
+                food: 100, maxFood: 100,
+                power: 20 + Math.floor(Math.random()*30), // 전투력
+                obs: 20 + Math.floor(Math.random()*30)    // 관찰력
             };
 
-            const newChar = {
+            // MBTI 보너스
+            if(mbti.includes('T')) stats.power += 20; // 사고형: 전투력
+            if(mbti.includes('N')) stats.obs += 20;   // 직관형: 관찰력
+
+            characters.push({
                 id: Date.now(),
                 name: name,
                 mbti: mbti,
-                bonusStats: bonusStats,
-                stats: calculateStats(mbti, bonusStats),
-                inventory: [], 
+                stats: stats,
                 relations: {}
-            };
+            });
 
-            characters.push(newChar);
-            renderCharList();
-            
-            // 초기화
-            document.getElementById('input-name').value = ''; 
-            document.getElementById('stat-str').value = 0;
-            document.getElementById('stat-agi').value = 0;
-            document.getElementById('stat-agg').value = 0;
-            document.getElementById('stat-act').value = 0;
-            checkPoints();
+            document.getElementById('input-name').value = '';
+            renderSetupList();
         }
 
-        function deleteCharacter(id) {
-            characters = characters.filter(c => c.id !== id);
-            renderCharList();
-        }
-
-        function renderCharList() {
-            const list = document.getElementById('char-list');
-            list.innerHTML = characters.map(c => `
+        function renderSetupList() {
+            const div = document.getElementById('setup-list');
+            div.innerHTML = characters.map(c => `
                 <div class="char-card">
-                    <button style="position:absolute; top:10px; right:10px; width:24px; height:24px; padding:0; background:#c62828;" onclick="deleteCharacter(${c.id})">×</button>
                     <div class="char-header">
-                        <span class="char-name">${c.name}</span>
-                        <span class="char-class">${c.mbti}</span>
+                        <span class="char-name">${c.name}</span> 
+                        <span class="char-meta">${c.mbti}</span>
                     </div>
-                    <div class="stat-row"><span>HP (체력)</span> <span>${c.stats.hp}</span></div>
-                    <div class="stat-row"><span>SAN (이성)</span> <span>${c.stats.sanity}</span></div>
-                    <div class="stat-row"><span>FOOD (포만)</span> <span>${c.stats.food}</span></div>
+                    <div class="char-meta">전투력: ${c.stats.power} / 관찰력: ${c.stats.obs}</div>
                 </div>
             `).join('');
         }
 
         // ==========================================
-        // 3. 아이템 수동 사용 (핵심 변경점)
-        // ==========================================
-        function useItem(charId, itemIdx) {
-            const char = characters.find(c => c.id === charId);
-            if (!char || char.stats.hp <= 0) return alert("사망한 캐릭터는 아이템을 사용할 수 없습니다.");
-
-            const item = char.inventory[itemIdx];
-            
-            // 효과 적용
-            if (item.type === 'hp') {
-                char.stats.hp = Math.min(char.stats.maxHp, char.stats.hp + item.val);
-                alert(`[${char.name}] 체력 회복! (+${item.val})`);
-            } else if (item.type === 'sanity') {
-                char.stats.sanity = Math.min(char.stats.maxSanity, char.stats.sanity + item.val);
-                alert(`[${char.name}] 정신이 맑아집니다. (SAN +${item.val})`);
-            } else if (item.type === 'food') {
-                char.stats.food = Math.min(char.stats.maxFood, char.stats.food + item.val);
-                alert(`[${char.name}] 배를 채웠습니다. (포만감 +${item.val})`);
-            }
-
-            // 로그 기록
-            addLog(`<span class="txt-sys">🎒 <b>${char.name}</b>(이)가 [${item.name}]을(를) 사용했습니다.</span>`);
-
-            // 아이템 소모 및 화면 갱신
-            char.inventory.splice(itemIdx, 1);
-            updateSimStatus();
-        }
-
-        // ==========================================
-        // 4. 시뮬레이션 엔진
+        // 2. 게임 엔진
         // ==========================================
         function startGame() {
-            if (characters.length < 1) return alert("최소 1명의 탐사자가 필요합니다.");
-            
-            characters.forEach(c1 => {
-                characters.forEach(c2 => {
-                    if (c1.id !== c2.id && !c1.relations[c2.name]) c1.relations[c2.name] = 0;
-                });
-            });
-
+            if(characters.length < 1) return alert("최소 1명의 탐사자가 필요합니다.");
             document.getElementById('page-setup').classList.remove('active');
             document.getElementById('page-sim').classList.add('active');
-            addLog(`📢 키퍼(Keeper): 시나리오를 시작합니다. 생존자 ${characters.length}명.`);
-            updateSimStatus();
+            document.getElementById('setup-btn-group').style.display = 'block';
+            
+            // 초기 보급품
+            partyInventory.push(ITEMS[0]); 
+            partyInventory.push(ITEMS[1]);
+            
+            addLog("📢 심연에 진입했습니다. 현재 상태는 양호합니다.");
+            updateUI();
         }
 
         function stopGame() {
-            if(confirm("세션을 강제 종료하시겠습니까?")) {
-                document.getElementById('page-sim').classList.remove('active');
-                document.getElementById('page-setup').classList.add('active');
-                isAutoPlaying = false;
-            }
+            if(!confirm("세션을 종료하고 초기화면으로 돌아가시겠습니까?")) return;
+            document.getElementById('page-sim').classList.remove('active');
+            document.getElementById('page-setup').classList.add('active');
+            document.getElementById('setup-btn-group').style.display = 'none';
         }
 
         function nextTurn() {
             day++;
-            addLog(`<div style="margin-top:15px; border-bottom:1px solid #333;"><span class="txt-day">Day ${day}</span></div>`);
+            addLog(`<div style="margin: 20px 0 10px 0;"><span class="txt-day">Day ${day}</span> 어둠 속에서 하루가 지났습니다.</div>`);
 
             const survivors = characters.filter(c => c.stats.hp > 0);
-            if (survivors.length < 1) {
-                addLog("<span style='color:red; font-size:1.2em;'>💀 전멸(Bad End). 아무도 심연에서 돌아오지 못했습니다.</span>");
-                isAutoPlaying = false;
+            if(survivors.length === 0) {
+                addLog("<div style='color:#ef5350; font-size:1.2em; margin-top:10px;'>💀 모든 탐사자가 심연에 잠식되었습니다. (Game Over)</div>");
                 return;
             }
 
-            // 1. 배고픔 처리
+            // 1. 자원 소모
             survivors.forEach(c => {
-                c.stats.food -= 10;
-                if (c.stats.food < 0) {
+                c.stats.food -= 15;
+                if(c.stats.food < 0) {
                     c.stats.food = 0;
-                    c.stats.hp -= 15;
-                    addLog(`<span class="txt-sys">.. ${c.name}(은)는 굶주림에 눈앞이 캄캄해집니다. (HP -15)</span>`);
+                    c.stats.hp -= 10;
+                    addLog(`<span class="txt-info">.. ${c.name}: 극심한 허기로 체력 감소 (-10)</span>`);
                 }
             });
 
-            // 2. 이벤트 롤
-            const eventRoll = Math.random();
-            
-            if (eventRoll < 0.35) {
-                processThreat(survivors); // 35% 위협
-            } else if (eventRoll < 0.65) {
-                processScavenge(survivors); // 30% 파밍
-            } else {
-                processInteraction(survivors); // 35% 상호작용
-            }
+            // 2. 이벤트 판정
+            const roll = Math.random();
+            if(roll < 0.35) processScavenge(survivors); // 파밍 (35%)
+            else if(roll < 0.65) processThreat(survivors); // 위협 (30%)
+            else processRest(survivors); // 휴식/상호작용 (35%)
 
-            updateSimStatus();
+            updateUI();
         }
 
-        // [이벤트: 외부 위협 (CoC Flavor)]
+        function processScavenge(survivors) {
+            addLog(`<span style="color:#fdd835;">[탐색]</span> 검은 폐허를 뒤집니다...`);
+            let found = false;
+            
+            survivors.forEach(c => {
+                // 관찰력 + 운 판정
+                if(Math.random() * 100 < c.stats.obs + 15) {
+                    const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+                    partyInventory.push({...item}); 
+                    addLog(`.. 🔍 <b>${c.name}</b>: [${item.name}] 발견.`);
+                    found = true;
+                }
+            });
+            if(!found) addLog(`.. 먼지와 재 말고는 아무것도 없습니다.`);
+        }
+
         function processThreat(survivors) {
             const threat = THREATS[Math.floor(Math.random() * THREATS.length)];
-            addLog(`<span class="txt-threat">[경고] ${threat.text}</span>`);
-
-            // 전투력 = 근력(STR) + 민첩(DEX) + 투지(POW)
-            let teamPower = 0;
-            survivors.forEach(c => teamPower += (c.stats.strength + c.stats.agility + c.stats.aggro)/3);
-            teamPower += (Math.random() * 60); 
-
-            if (teamPower >= threat.power) {
-                addLog(`<span style="color:#2ecc71;">✅ 주사위 성공! 생존자들이 위협을 물리쳤습니다.</span>`);
-                survivors.forEach(c => {
-                    c.stats.sanity -= 5; 
-                    c.stats.food -= 5;   
-                });
+            addLog(`<span class="txt-threat">[위협] ${threat.text} (난이도: ${threat.power})</span>`);
+            
+            // 파티 전투력 합산
+            let teamPower = survivors.reduce((sum, c) => sum + c.stats.power, 0) + (Math.random() * 50);
+            
+            if(teamPower >= threat.power) {
+                addLog(`.. ✅ 전원이 힘을 합쳐 위협을 물리쳤습니다!`);
+                // 성공해도 스트레스는 받음
+                survivors.forEach(c => updateStat(c, 'sanity', -5));
             } else {
-                addLog(`<span style="color:#e74c3c;">❌ 주사위 실패! 압도적인 공포가 덮쳐옵니다.</span>`);
-                const dmg = Math.floor((threat.power - teamPower) / survivors.length) + 10;
+                addLog(`.. ❌ 방어 실패! 무자비한 공격을 받습니다.`);
+                const dmg = 20;
                 survivors.forEach(c => {
-                    c.stats.hp -= dmg;
-                    c.stats.sanity -= 10;
-                    addLog(`.. ${c.name}: 비명을 지르며 피해를 입습니다 (HP -${dmg})`);
+                    updateStat(c, 'hp', -dmg);
+                    updateStat(c, 'sanity', -10);
+                    addLog(`.. ${c.name} (HP -${dmg}, SAN -10)`);
                 });
             }
         }
 
-        // [이벤트: 파밍 (수동 아이템 획득)]
-        function processScavenge(survivors) {
-            addLog(`<span class="txt-item">[탐색] 생존자들이 폐허를 조사합니다... (관찰력 판정)</span>`);
-            
+        function processRest(survivors) {
+            addLog(`<span style="color:#81d4fa;">[휴식]</span> 잠시 안전한 곳에서 숨을 고릅니다.`);
             survivors.forEach(c => {
-                // 관찰력(OBS) + 민첩(DEX) 판정
-                const chance = (c.stats.active + c.stats.agility) / 2 + 15;
-                if (Math.random() * 100 < chance) {
-                    const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-                    // 아이템 객체 복사해서 넣기
-                    c.inventory.push({...item}); 
-                    addLog(`.. 🔍 <b>${c.name}</b>: [${item.name}] 발견!`);
-                } else {
-                    addLog(`.. ${c.name}: 아무것도 찾지 못했습니다.`);
-                    c.stats.food -= 3;
-                }
+                updateStat(c, 'sanity', 5); // 소량 회복
             });
         }
 
-        // [이벤트: 상호작용 (광기 포함)]
-        function processInteraction(survivors) {
-            if (survivors.length < 2) return;
+        // ==========================================
+        // 3. 아이템 사용 (최대치 제한 로직 적용)
+        // ==========================================
+        
+        // 스탯 안전 업데이트 함수 (핵심 로직)
+        function updateStat(char, type, amount) {
+            if (char.stats.hp <= 0 && type !== 'hp') return; // 죽은 자는 말이 없다 (단, 부활 로직 있다면 예외)
 
-            const actor = survivors[Math.floor(Math.random() * survivors.length)];
-            let target = survivors[Math.floor(Math.random() * survivors.length)];
-            while(actor.id === target.id) target = survivors[Math.floor(Math.random() * survivors.length)];
+            // 현재 수치 + 변동량
+            let newVal = char.stats[type] + amount;
+            
+            // 최대치 기준 결정 (maxHp, maxSanity 등)
+            let maxKey = 'max' + type.charAt(0).toUpperCase() + type.slice(1);
+            let maxVal = char.stats[maxKey] || 100; // 기본 100
 
-            // SAN치(이성) 체크
-            if (actor.stats.sanity < 30) {
-                addLog(`<span class="txt-sanity">[광기 발작] <b>${actor.name}</b>의 눈빛이 맛이 갔습니다. "그들이.. 내 뇌를 파먹고 있어!!"</span>`);
-                addLog(`.. ${actor.name}(이)가 ${target.name}를 공격합니다!`);
-                target.stats.hp -= 25;
+            // ★ 중요: 최대값(maxVal)을 넘지 않게 Math.min 처리
+            // ★ 중요: 0 밑으로 내려가지 않게 Math.max 처리
+            char.stats[type] = Math.max(0, Math.min(maxVal, newVal));
+        }
+
+        function requestItemUse(idx) {
+            selectedItemIndex = idx;
+            const item = partyInventory[idx];
+            
+            const modal = document.getElementById('item-modal');
+            document.getElementById('modal-title').innerText = `[${item.name}] 사용`;
+            document.getElementById('modal-desc').innerText = `${item.desc}\n\n누구에게 사용하시겠습니까?`;
+            
+            const listDiv = document.getElementById('modal-targets');
+            listDiv.innerHTML = characters.map(c => {
+                const isDead = c.stats.hp <= 0;
+                return `<div class="target-btn ${isDead?'dead':''}" onclick="confirmUseItem(${c.id})">
+                    ${c.name} <br>
+                    <span style="font-size:0.8em; color:#aaa;">
+                        HP:${c.stats.hp}/${c.stats.maxHp} SAN:${c.stats.sanity}/${c.stats.maxSanity}
+                    </span>
+                </div>`;
+            }).join('');
+            
+            modal.style.display = 'flex';
+        }
+
+        function confirmUseItem(charId) {
+            if(selectedItemIndex === -1) return;
+            
+            const item = partyInventory[selectedItemIndex];
+            const char = characters.find(c => c.id === charId);
+            
+            if(char) {
+                // 안전한 스탯 업데이트 함수 호출
+                updateStat(char, item.type, item.val);
+                addLog(`<span class="txt-info">💊 <b>${char.name}</b>에게 [${item.name}] 사용 완료.</span>`);
+                
+                // 아이템 소모
+                partyInventory.splice(selectedItemIndex, 1);
             }
-            else {
-                addLog(`💬 <b>${actor.name}</b>(와)과 <b>${target.name}</b>(은)는 잠시 숨을 돌리며 대화합니다.`);
-                actor.stats.sanity += 5; target.stats.sanity += 5;
-            }
+            
+            closeModal();
+            updateUI();
+        }
+
+        function closeModal() {
+            document.getElementById('item-modal').style.display = 'none';
+            selectedItemIndex = -1;
         }
 
         // ==========================================
-        // 5. 화면 갱신 (아이템 버튼 렌더링 포함)
+        // 4. UI 렌더링 (그래프 뚫림 방지 적용)
         // ==========================================
-        function updateSimStatus() {
-            const container = document.getElementById('sim-status');
-            container.innerHTML = characters.map(c => {
+        function updateUI() {
+            const charDiv = document.getElementById('sim-char-list');
+            
+            charDiv.innerHTML = characters.map(c => {
                 const isDead = c.stats.hp <= 0;
-                const hpPct = Math.max(0, (c.stats.hp/c.stats.maxHp)*100);
-                const sanPct = Math.max(0, (c.stats.sanity/c.stats.maxSanity)*100);
-                const foodPct = Math.max(0, (c.stats.food/c.stats.maxFood)*100);
                 
-                let statusClass = "char-card";
-                if (c.stats.sanity < 30) statusClass += " madness"; // 광기 상태 테두리
-                if (c.stats.hp < 30) statusClass += " danger"; // 위급 상태
-
-                if (isDead) return `<div class="char-card" style="opacity:0.3; filter:grayscale(100%);"><div class="char-name">💀 ${c.name} (사망)</div></div>`;
-
-                // 아이템 버튼 리스트 생성
-                let invHtml = `<div class="inv-label">가방 (클릭하여 사용)</div>`;
-                if (c.inventory.length === 0) {
-                    invHtml += `<span style="font-size:0.7em; color:#555;">비어있음</span>`;
-                } else {
-                    c.inventory.forEach((item, idx) => {
-                        invHtml += `<button class="item-btn" onclick="useItem(${c.id}, ${idx})" title="${item.desc}">${item.name}</button>`;
-                    });
-                }
+                // ★ 중요: 그래프 계산 시 100% 초과 방지 (Math.min(100, ...))
+                const hpPct = Math.min(100, (c.stats.hp / c.stats.maxHp) * 100);
+                const sanPct = Math.min(100, (c.stats.sanity / c.stats.maxSanity) * 100);
+                const foodPct = Math.min(100, (c.stats.food / c.stats.maxFood) * 100);
+                
+                let classes = "char-card";
+                if(c.stats.sanity < 30) classes += " madness";
+                if(c.stats.hp < 30) classes += " danger";
+                
+                if(isDead) return `<div class="char-card" style="opacity:0.3; filter:grayscale(100%); border-color:#333;"><div class="char-header"><span class="char-name">💀 ${c.name} (사망)</span></div></div>`;
 
                 return `
-                <div class="${statusClass}">
-                    <div class="char-name">${c.name} <span style="font-size:0.7em; color:#666;">${c.stats.sanity<30?'(광기)':''}</span></div>
+                <div class="${classes}">
+                    <div class="char-header">
+                        <span class="char-name">${c.name}</span>
+                        <span class="char-meta">${c.mbti}</span>
+                    </div>
                     
                     <div class="stat-row">
-                        <span>HP</span> <div class="bar-bg"><div class="bar-fill" style="width:${hpPct}%; background:var(--hp-color)"></div></div> <span>${Math.floor(c.stats.hp)}</span>
+                        <span>HP</span> 
+                        <div class="bar-bg"><div class="bar-fill" style="width:${hpPct}%; background:var(--hp-color)"></div></div> 
+                        <span>${c.stats.hp}</span>
                     </div>
                     <div class="stat-row">
-                        <span>SAN</span> <div class="bar-bg"><div class="bar-fill" style="width:${sanPct}%; background:var(--san-color)"></div></div> <span>${Math.floor(c.stats.sanity)}</span>
+                        <span>SAN</span> 
+                        <div class="bar-bg"><div class="bar-fill" style="width:${sanPct}%; background:var(--san-color)"></div></div> 
+                        <span>${c.stats.sanity}</span>
                     </div>
                     <div class="stat-row">
-                        <span>FOOD</span> <div class="bar-bg"><div class="bar-fill" style="width:${foodPct}%; background:var(--food-color)"></div></div> <span>${Math.floor(c.stats.food)}</span>
-                    </div>
-
-                    <div class="inv-area">
-                        ${invHtml}
+                        <span>FOOD</span> 
+                        <div class="bar-bg"><div class="bar-fill" style="width:${foodPct}%; background:var(--food-color)"></div></div> 
+                        <span>${c.stats.food}</span>
                     </div>
                 </div>
-            `}).join('');
+                `;
+            }).join('');
+
+            // 인벤토리 렌더링
+            const invDiv = document.getElementById('shared-inv');
+            if(partyInventory.length === 0) {
+                invDiv.innerHTML = `<span style="color:#555; font-size:0.9em; padding:10px;">..물자가 바닥났습니다..</span>`;
+            } else {
+                invDiv.innerHTML = partyInventory.map((item, idx) => `
+                    <button class="item-btn" onclick="requestItemUse(${idx})" title="${item.desc}">
+                        ${item.name}
+                    </button>
+                `).join('');
+            }
+
+            const logWin = document.getElementById('log-window');
+            logWin.scrollTop = logWin.scrollHeight;
         }
 
         function addLog(html) {
             const win = document.getElementById('log-window');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = html;
-            win.appendChild(entry);
-            win.scrollTop = win.scrollHeight;
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = html;
+            win.appendChild(div);
         }
-
-        function autoPlay() {
-            if (isAutoPlaying) return;
-            isAutoPlaying = true;
-            addLog("⏩ 자동 진행 시작... (아이템 사용 타이밍을 놓치지 마세요!)");
-            const timer = setInterval(() => {
-                const living = characters.filter(c => c.stats.hp > 0).length;
-                if (!isAutoPlaying || living < 1) {
-                    clearInterval(timer);
-                    isAutoPlaying = false;
-                } else {
-                    nextTurn();
-                }
-            }, 1500); 
-        }
-
-        checkPoints();
-
     </script>
 </body>
 </html>
-
